@@ -1,12 +1,8 @@
 class ShortUrlService {
-    constructor(id) {
-        this.id = id;
-    }
-
-    base62() {
+    base62(id) {
         let str = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         let result = '';
-        let num = this.id;
+        let num = id;
 
         if (num === 0) return '0=====';
 
@@ -22,3 +18,6 @@ class ShortUrlService {
         return result;
     }
 }
+
+
+module.exports = ShortUrlService;
