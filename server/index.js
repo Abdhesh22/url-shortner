@@ -1,9 +1,9 @@
+require("dotenv").config();
 const express = require("express");
-const RedisCluster = require("./service/connection/redis-cluster.js");
+
 const app = express();
+app.use("/", require("./route/index.js"));
 
-app.use('/', require("./route/index.js"))
-
-app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
+app.listen(process.env.PORT, () => {
+  console.log(`Server running at http://localhost:${process.env.PORT}`);
 });
