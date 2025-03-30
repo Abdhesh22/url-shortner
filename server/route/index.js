@@ -1,7 +1,8 @@
 const express = require("express");
 const route = express.Router();
-const ShortUrlController = require("../controller/url.controller.js");
+const UrlController = require("../controller/url.controller.js");
 
-route.post("/short-url", ShortUrlController.create);
+route.post("/url", UrlController.create);
+route.get("/url", UrlController.get);
 
 module.exports = route;

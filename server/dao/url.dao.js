@@ -6,7 +6,7 @@ const Schema = require(path.join(
   "..",
   "resources",
   "schemas",
-  "url.dao.js"
+  "url.schema.js"
 ))(mongoose);
 
 const BaseDao = require("./base.dao.js");

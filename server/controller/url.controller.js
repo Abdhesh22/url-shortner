@@ -1,6 +1,11 @@
 const ZKClient = require("../../zoo-keeper/zh-client.js");
 const UrlService = require("../service/url.service.js");
 const RedisService = require("../service/redis.service.js");
+const DbConnect = require("../connection/database.connection.js");
+const UrlDAO = require("../dao/url.dao.js");
+const { http } = require("../utilities/constants/http.constants.js");
+const message = require("../utilities/messages/reponse-messages.js");
+const { SERVER_NAME } = process.env;
 
 const create = async (req, res) => {
   try {
@@ -10,20 +15,31 @@ const create = async (req, res) => {
     const urlService = new UrlService();
     const redisService = new RedisService();
 
-    const SERVER_NAME = "short-url-server";
-
     const range = await zkClient.getIDRange(SERVER_NAME);
     console.log(`Range assigned: ${range.start} - ${range.end}`);
 
     const id = await zkClient.getID(SERVER_NAME);
     const shortUrl = await urlService.base62(id);
 
-    redisService.set(shortUrl, longUrl); //mapping long url to short url
+    const connection = new DbConnect.getConnection("S1");
+    const urlDao = new UrlDAO(connection);
 
-    // res.send({ id });
+    await urlDao.create({
+      shortUrl: shortUrl,
+      longUrl: longUrl,
+    });
+
+    redisService.set(shortUrl, longUrl);
+    res.status(http.OK).send({
+      status: true,
+      shortUrl: shortUrl,
+      longUrl: longUrl,
+      message: message.url.created,
+    });
   } catch (error) {
-    console.error("Error generating ID:", error);
-    // res.status(500).send({ error: "Failed to generate ID" });
+    res
+      .status(http.INTERNAL_SERVER_ERROR)
+      .send({ status: false, message: message.server.ERROR });
   }
 };
 
@@ -36,8 +52,25 @@ const get = async (req, res) => {
     const cacheUrl = redisService.get(shortUrl);
     //if cache url found then return else take from dao
     if (cacheUrl) {
-      res.status(200).json({ url: cacheUrl });
+      return res.status(200).json({ url: cacheUrl });
     }
+
+    const connection = new DbConnect.getConnection("S1");
+    const urlDao = new UrlDAO(connection);
+
+    const url = await urlDao.findOne(
+      {
+        shortUrl: shortUrl,
+      },
+      { longUrl: 1 }
+    );
+
+    redisService.set(shortUrl, url.longUrl);
+    res.status(http.OK).send({
+      status: true,
+      shortUrl: shortUrl,
+      longUrl: url.longUrl,
+    });
   } catch (error) {
     res
       .status(500)
@@ -47,4 +80,5 @@ const get = async (req, res) => {
 
 module.exports = {
   create,
+  get,
 };
