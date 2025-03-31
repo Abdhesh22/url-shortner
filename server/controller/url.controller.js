@@ -16,12 +16,11 @@ const create = async (req, res) => {
     const redisService = new RedisService();
 
     const range = await zkClient.getIDRange(SERVER_NAME);
-    console.log(`Range assigned: ${range.start} - ${range.end}`);
 
     const id = await zkClient.getID(SERVER_NAME);
     const shortUrl = await urlService.base62(id);
 
-    const connection = new DbConnect.getConnection("S1");
+    const connection = await DbConnect.getConnection("S1");
     const urlDao = new UrlDAO(connection);
 
     await urlDao.create({
@@ -49,7 +48,8 @@ const get = async (req, res) => {
 
     //first check into cache..
     const redisService = new RedisService();
-    const cacheUrl = redisService.get(shortUrl);
+    const cacheUrl = await redisService.get(shortUrl);
+
     //if cache url found then return else take from dao
     if (cacheUrl) {
       return res.status(200).json({ url: cacheUrl });
@@ -57,15 +57,9 @@ const get = async (req, res) => {
 
     const connection = new DbConnect.getConnection("S1");
     const urlDao = new UrlDAO(connection);
+    const url = await urlDao.findOne({ shortUrl: shortUrl }, { longUrl: 1 });
+    await redisService.set(shortUrl, url.longUrl);
 
-    const url = await urlDao.findOne(
-      {
-        shortUrl: shortUrl,
-      },
-      { longUrl: 1 }
-    );
-
-    redisService.set(shortUrl, url.longUrl);
     res.status(http.OK).send({
       status: true,
       shortUrl: shortUrl,
