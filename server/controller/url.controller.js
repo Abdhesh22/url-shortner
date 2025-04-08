@@ -5,7 +5,7 @@ const DbConnect = require("../connection/database.connection.js");
 const UrlDAO = require("../dao/url.dao.js");
 const { http } = require("../utilities/constants/http.constants.js");
 const message = require("../utilities/messages/reponse-messages.js");
-const { SERVER_NAME } = process.env;
+const { SERVER_NAME, DB_NAME } = process.env;
 
 const create = async (req, res) => {
   try {
@@ -15,12 +15,10 @@ const create = async (req, res) => {
     const urlService = new UrlService();
     const redisService = new RedisService();
 
-    const range = await zkClient.getIDRange(SERVER_NAME);
-
     const id = await zkClient.getID(SERVER_NAME);
     const shortUrl = await urlService.base62(id);
 
-    const connection = await DbConnect.getConnection("S1");
+    const connection = await DbConnect.getConnection(DB_NAME);
     const urlDao = new UrlDAO(connection);
 
     await urlDao.create({
@@ -52,10 +50,12 @@ const get = async (req, res) => {
 
     //if cache url found then return else take from dao
     if (cacheUrl) {
-      return res.status(200).json({ url: cacheUrl });
+      return res
+        .status(200)
+        .json({ status: true, shortUrl: shortUrl, longUrl: cacheUrl });
     }
 
-    const connection = new DbConnect.getConnection("S1");
+    const connection = new DbConnect.getConnection(DB_NAME);
     const urlDao = new UrlDAO(connection);
     const url = await urlDao.findOne({ shortUrl: shortUrl }, { longUrl: 1 });
     await redisService.set(shortUrl, url.longUrl);
