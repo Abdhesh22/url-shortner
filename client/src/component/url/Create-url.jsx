@@ -8,7 +8,7 @@ import { SERVER_TOAST } from "../../utils/constants/server.constants";
 const CreateUrl = () => {
   const [longUrl, setLongUrl] = useState("");
   const baseURL = import.meta.env.VITE_DOMAIN_URL;
-  const [shortUrl, setShortUrl] = useState(`${baseURL}example`);
+  const [shortUrl, setShortUrl] = useState();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState();
 
@@ -127,22 +127,24 @@ const CreateUrl = () => {
         </div>
 
         {/* Short URL Display */}
-        <div className="col-lg-8 mt-2">
-          <div className="card shadow-sm p-4">
-            <h5>Short URL</h5>
-            <div className="d-flex align-items-center justify-content-between">
-              <p className="mb-0 text-primary">{shortUrl}</p>
-              <button
-                className="btn btn-outline-secondary"
-                type="button"
-                onClick={() => handleCopy()}
-              >
-                Copy
-                <FontAwesomeIcon icon={faClipboard} />
-              </button>
+        {shortUrl && (
+          <div className="col-lg-8 mt-2">
+            <div className="card shadow-sm p-4">
+              <h5>Short URL</h5>
+              <div className="d-flex align-items-center justify-content-between">
+                <p className="mb-0 text-primary">{shortUrl}</p>
+                <button
+                  className="btn btn-outline-secondary"
+                  type="button"
+                  onClick={() => handleCopy()}
+                >
+                  Copy
+                  <FontAwesomeIcon icon={faClipboard} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
