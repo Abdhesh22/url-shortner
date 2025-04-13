@@ -1,10 +1,9 @@
 const Redis = require("ioredis");
+const { REDIS_HOST, REDIS_PORT } = process.env
 
 // Connect to the Redis Cluster
 const redis = new Redis.Cluster([
-  { host: "127.0.0.1", port: 7001 },
-  { host: "127.0.0.1", port: 7002 },
-  { host: "127.0.0.1", port: 7003 },
+  { host: REDIS_HOST, port: REDIS_PORT }
 ]);
 
 redis.on("connect", () => {
