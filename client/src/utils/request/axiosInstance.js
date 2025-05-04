@@ -1,7 +1,6 @@
 import axios from "axios";
 
 // Create an Axios instance
-console.log("import.meta.env.BASE_URL: ", import.meta.env.VITE_BASE_URL);
 const axiosInstance = axios.create({
   baseURL: "/",
   timeout: 10000,
@@ -14,7 +13,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     // Add auth token if available
-    const token = localStorage.getItem("authToken"); // Update as per your token storage
+    const token = localStorage.getItem("authToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

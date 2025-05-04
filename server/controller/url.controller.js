@@ -10,12 +10,11 @@ const { SERVER_NAME, DB_NAME } = process.env;
 const create = async (req, res) => {
   try {
     const { longUrl } = req.body;
-
-    const zkClient = new ZKClient();
+    const zkClient = new ZKClient(SERVER_NAME);
     const urlService = new UrlService();
     const redisService = new RedisService();
 
-    const id = await zkClient.getID(SERVER_NAME);
+    const id = await zkClient.getID();
     const shortUrl = await urlService.base62(id);
 
     const connection = await DbConnect.getConnection(DB_NAME);
@@ -34,6 +33,7 @@ const create = async (req, res) => {
       message: message.url.created,
     });
   } catch (error) {
+    console.log("SDS", error);
     res
       .status(http.INTERNAL_SERVER_ERROR)
       .send({ status: false, message: message.server.ERROR });
